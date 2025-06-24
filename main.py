@@ -86,7 +86,7 @@ class SurveyApp:
 
         def run_in_thread():
             try:
-                run_survey(self.logger, self.selected_entries, submit=False, progress_callback=lambda d, t: self.root.after(0, update_progress, d, t))
+                run_survey(self.logger, self.selected_entries, submit=True, progress_callback=lambda d, t: self.root.after(0, update_progress, d, t))
             except Exception as e:
                 self.root.after(0, lambda: self.logger.log(f"[LỖI] Đã xảy ra lỗi trong quá trình khảo sát:\n{e}"))
                 self.root.after(0, lambda: self.info_label.config(text="❌ Có lỗi xảy ra khi khảo sát."))

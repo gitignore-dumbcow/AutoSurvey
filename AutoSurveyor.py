@@ -52,20 +52,25 @@ def click_element(ctx, element_id):
     ctx.driver.find_element(By.ID, element_id).click()
 
 def select_rating(ctx, value, question_label="Q"):
-    try:
-        ctx.wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "atmrating-btn")))
-        rating_value = str(value).strip()
-        buttons = ctx.driver.find_elements(By.CLASS_NAME, "atmrating-btn")
-        for btn in buttons:
-            if btn.get_attribute("data-value") == rating_value:
-                ctx.driver.execute_script("arguments[0].scrollIntoView(true);", btn)
-                btn.click()
-                ctx.logger.log(f"[{now()}] - O - {question_label}: {rating_value}")
-                break
-        else:
-            ctx.logger.log(f"[{now()}] - X - Không tìm thấy nút cho {question_label}: {rating_value}")
-    except Exception as e:
-        ctx.logger.log(f"[{now()}] - X - Lỗi khi chọn {question_label}: {e}")
+    rating_value = str(value).strip()
+    for attempt in range(3):
+        try:
+            ctx.wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "atmrating-btn")))
+            buttons = ctx.driver.find_elements(By.CLASS_NAME, "atmrating-btn")
+            for btn in buttons:
+                if btn.get_attribute("data-value") == rating_value:
+                    ctx.driver.execute_script("arguments[0].scrollIntoView(true);", btn)
+                    btn.click()
+                    ctx.logger.log(f"[{now()}] - O - {question_label}: {rating_value}")
+                    click_next_button(ctx)
+                    return  # Thành công, kết thúc hàm
+            else:
+                ctx.logger.log(f"[{now()}] - X - Không tìm thấy nút cho {question_label}: {rating_value}")
+        except Exception as e:
+            ctx.logger.log(f"[{now()}] - X - Lỗi khi chọn {question_label} (lần {attempt+1}): {e}")
+        time.sleep(1)  # Đợi 1 giây trước lần thử tiếp theo
+
+    # Nếu sau 3 lần vẫn thất bại, thử click_next_button và kết thúc
     click_next_button(ctx)
 
 def select_yes_no(ctx, value, yes_id, no_id, question_label):
