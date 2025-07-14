@@ -74,8 +74,6 @@ class SurveyApp:
             self.info_label.config(text=" ▲ Bạn cần tìm kiếm trước khi bắt đầu.")
             return
         
-        total = len(self.selected_entries)
-        
 
         self.logger = LoggerWindow()
 
@@ -86,7 +84,12 @@ class SurveyApp:
 
         def run_in_thread():
             try:
-                run_survey(self.logger, self.selected_entries, submit=True, progress_callback=lambda d, t: self.root.after(0, update_progress, d, t))
+                run_survey(
+                    self.logger, 
+                    self.selected_entries, 
+                    submit=True, 
+                    progress_callback=lambda d, 
+                    t: self.root.after(0, update_progress, d, t))
             except Exception as e:
                 self.root.after(0, lambda: self.logger.log(f"[LỖI] Đã xảy ra lỗi trong quá trình khảo sát:\n{e}"))
                 self.root.after(0, lambda: self.info_label.config(text="❌ Có lỗi xảy ra khi khảo sát."))
@@ -98,7 +101,19 @@ class SurveyApp:
         self.logger.start()
 
 
+    def notify_user_warning(message):
+        import winsound
+        import tkinter.messagebox as messagebox
 
+        try:
+            winsound.Beep(1000, 300)
+        except:
+            print('\a')  # beep đơn giản
+
+        # Hiện popup, tránh block nếu chạy từ thread:
+        def show_msg():
+            messagebox.showwarning("Lỗi cần xử lý", message)
+        tk.Tk().after(0, show_msg)
 
 # Khởi chạy ứng dụng
 if __name__ == "__main__":
